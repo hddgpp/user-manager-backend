@@ -16,9 +16,13 @@ function getRecipients() {
     : [];
 }
 
-async function sendExpiryWarning(user, daysLeft) {
-  const recipients = getRecipients();
-  if (recipients.length === 0) return;
+async function sendExpiryWarning(user, daysLeft, recipients) {
+  // Use passed recipients, fall back to .env if none passed
+  const to = recipients && recipients.length > 0
+    ? recipients
+    : getRecipients();
+
+  if (to.length === 0) return;
 
   const urgency = daysLeft <= 1 ? '🚨 URGENT' : '⚠️ Warning';
   const subject = `${urgency}: User "${user.name}" expires in ${daysLeft} day(s)`;
@@ -35,20 +39,18 @@ async function sendExpiryWarning(user, daysLeft) {
         <tr><td style="padding: 8px; font-weight: bold;">Expires</td><td>${new Date(user.expiresAt).toLocaleDateString()}</td></tr>
         <tr><td style="padding: 8px; font-weight: bold;">Days Left</td><td style="color: #dc2626; font-weight: bold;">${daysLeft}</td></tr>
       </table>
-      <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">
-        Sent by User Management System
-      </p>
+      <p style="color: #6b7280; font-size: 12px; margin-top: 16px;">Sent by User Management System</p>
     </div>
   `;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
-    to: recipients.join(', '),      // all recipients in one email
+    to: to.join(', '),
     subject,
     html,
   });
 
-  console.log(`Email sent for user ${user.name} (${daysLeft}d left) → ${recipients.join(', ')}`);
+  console.log(`Email sent for ${user.name} (${daysLeft}d left) → ${to.join(', ')}`);
 }
 
 module.exports = { sendExpiryWarning };

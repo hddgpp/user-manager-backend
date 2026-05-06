@@ -17,5 +17,11 @@ db.exec(`
     expiresAt TEXT NOT NULL
   )
 `);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS emails (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL
+  )
+`);
 
 module.exports = db;
